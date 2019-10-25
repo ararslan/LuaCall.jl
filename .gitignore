@@ -1,0 +1,6 @@
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+Manifest.toml
+/deps/luadefs*
+/deps/deps.jl
