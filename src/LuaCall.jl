@@ -1,17 +1,14 @@
 module LuaCall
 
-let deps = joinpath(dirname(@__DIR__), "deps", "deps.jl")
-    if isfile(deps)
-        include(deps)
-    else
-        error("The LuaCall package is not properly installed. Run `using Pkg; ",
-              "Pkg.build(\"LuaCall\")` and try again.")
-    end
-end
+using Lua_jll
 
 export luacall, @lua_str
 
 const LUA_STATE = Ref{Ptr{Cvoid}}(C_NULL)
+
+# XXX: Not true in general, just x86-64, I think
+const LuaFloat = Cdouble
+const LuaInt = Clonglong
 
 function __init__()
     state = ccall((:luaL_newstate, liblua), Ptr{Cvoid}, ())
