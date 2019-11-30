@@ -1,17 +1,24 @@
 module LuaCall
 
-let deps = joinpath(dirname(@__DIR__), "deps", "deps.jl")
-    if isfile(deps)
-        include(deps)
-    else
-        error("The LuaCall package is not properly installed. Run `using Pkg; ",
-              "Pkg.build(\"LuaCall\")` and try again.")
-    end
-end
+using Lua_jll
 
 export luacall, @lua_str
 
 const LUA_STATE = Ref{Ptr{Cvoid}}(C_NULL)
+
+const LuaInt = let t = ccall((:jl_lua_int_type, liblua), Cint, ())
+    t == 1 ? Cint :
+    t == 2 ? Clong :
+    t == 3 ? Clonglong :
+    error("unknown Lua integer type")
+end
+
+const LuaFloat = let t = ccall((:jl_lua_float_type, liblua), Cint, ())
+    t == 1 ? Cfloat :
+    t == 2 ? Cdouble :
+    t == 3 ? error("Julia does not natively support long doubles") :
+    error("unknown Lua float type")
+end
 
 function __init__()
     state = ccall((:luaL_newstate, liblua), Ptr{Cvoid}, ())
