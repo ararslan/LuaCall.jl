@@ -6,9 +6,19 @@ export luacall, @lua_str
 
 const LUA_STATE = Ref{Ptr{Cvoid}}(C_NULL)
 
-# XXX: Not true in general, just x86-64, I think
-const LuaFloat = Cdouble
-const LuaInt = Clonglong
+const LuaInt = let t = ccall((:jl_lua_int_type, liblua), Cint, ())
+    t == 1 ? Cint :
+    t == 2 ? Clong :
+    t == 3 ? Clonglong :
+    error("unknown Lua integer type")
+end
+
+const LuaFloat = let t = ccall((:jl_lua_float_type, liblua), Cint, ())
+    t == 1 ? Cfloat :
+    t == 2 ? Cdouble :
+    t == 3 ? error("Julia does not natively support long doubles") :
+    error("unknown Lua float type")
+end
 
 function __init__()
     state = ccall((:luaL_newstate, liblua), Ptr{Cvoid}, ())
